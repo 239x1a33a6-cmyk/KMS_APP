@@ -3,17 +3,41 @@ import authService from "../services/authService";
 
 const AuthContext = createContext(null);
 
+const STORAGE_KEY = "kms_user";
+
+const getStoredUser = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const storeUser = (user) => {
+  if (user) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Initialise from localStorage → no flicker on reload
+  const [user, setUserState] = useState(getStoredUser);
+  // If we already have a cached user, don't block render while we verify
+  const [loading, setLoading] = useState(!getStoredUser());
+
+  const setUser = (u) => {
+    storeUser(u);
+    setUserState(u);
+  };
 
   const checkAuth = async () => {
-    setLoading(true);
-
     try {
       const response = await authService.getCurrentUser();
       setUser(response.data?.data || null);
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -37,7 +61,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // Always verify session with server in background (don't block render)
     checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value = useMemo(
@@ -51,7 +77,7 @@ export const AuthProvider = ({ children }) => {
       checkAuth,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, loading, login, logout, register, checkAuth],
+    [user, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
