@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(180deg, #f5f7ff 0%, #f8f9fa 100%);
+  color: #1b1d29;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  background: linear-gradient(180deg, rgba(90, 118, 255, 0.08), transparent 24%);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(19, 25, 40, 0.08);
+}
+
+.brand-mark {
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-size: 1.5rem;
+  color: #171a2a;
+}
+
+.nav-pill {
+  text-decoration: none;
+  color: #303548;
+  background: rgba(19, 25, 40, 0.04);
+  border: 1px solid rgba(19, 25, 40, 0.05);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.92rem;
+  transition: all 0.2s ease;
+}
+
+.nav-pill:hover {
+  color: #171a2a;
+  background: rgba(19, 25, 40, 0.08);
+  text-decoration: none;
+}
+
+.card {
+  border-radius: 1.2rem;
+}
+
+.resource-hero-card {
+  background: linear-gradient(135deg, rgba(80, 101, 255, 0.06), rgba(255, 255, 255, 0.9));
+}
+
+.resource-title {
+  font-size: clamp(2rem, 3vw, 3rem);
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+}
+
+.resource-content {
+  background: #f2f4fb;
+  border: 1px solid rgba(34, 41, 76, 0.08);
+  color: #1c2338;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  white-space: pre-wrap;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.login-shell {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.login-panel {
+  background: linear-gradient(135deg, rgba(91, 108, 255, 0.08), rgba(255, 255, 255, 0.92));
+}
+
+.feature-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(91, 108, 255, 0.12);
+  color: #273150;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
