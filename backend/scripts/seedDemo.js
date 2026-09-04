@@ -96,10 +96,6 @@ const buildDemoData = () => {
 };
 
 const seedDemoData = async () => {
-  if (process.env.DEMO_MODE !== "true") {
-    return { users: 0, resources: 0, skipped: true, reason: "DEMO_MODE not enabled" };
-  }
-
   if (mongoose.connection.readyState !== 1) {
     return { users: 0, resources: 0, skipped: true };
   }
