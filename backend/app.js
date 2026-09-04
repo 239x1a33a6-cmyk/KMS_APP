@@ -54,18 +54,19 @@ app.use(cookieParser());
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests from this IP, please try again later.",
+  skip: (req) => req.path === "/api/health",
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 50,
   standardHeaders: true,
   legacyHeaders: false,
-  message: "Too many login attempts from this IP, please try again later.",
+  message: "Too many login attempts, please try again in 15 minutes.",
 });
 
 app.use(generalLimiter);
