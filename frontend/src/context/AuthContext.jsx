@@ -23,9 +23,8 @@ const storeUser = (user) => {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Initialise from localStorage → no flicker on reload
   const [user, setUserState] = useState(getStoredUser);
-  // If we already have a cached user, don't block render while we verify
+  // If cached user exists, skip the loading spinner entirely
   const [loading, setLoading] = useState(!getStoredUser());
 
   const setUser = (u) => {
@@ -37,8 +36,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.getCurrentUser();
       setUser(response.data?.data || null);
-    } catch {
-      setUser(null);
+    } catch (error) {
+      // Only invalidate the session on an explicit 401 from the server.
+      // Network errors (server cold-start, CORS hiccup) should NOT log the user out.
+      const status = error?.response?.status;
+      if (status === 401) {
+        setUser(null);
+      }
+      // For any other error (network, 5xx, CORS) keep the cached user alive
     } finally {
       setLoading(false);
     }
@@ -61,7 +66,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Always verify session with server in background (don't block render)
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
