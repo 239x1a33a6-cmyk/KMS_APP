@@ -12,9 +12,13 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
-// Build allowed origins list from env (comma-separated) + always allow localhost for dev
+// Build allowed origins: hardcoded known URLs + any additional from CLIENT_URL env var
 const buildAllowedOrigins = () => {
-  const origins = ["http://localhost:5173", "http://localhost:3000"];
+  const origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://kms-app.vercel.app", // production frontend — always allowed
+  ];
   const clientUrl = process.env.CLIENT_URL;
   if (clientUrl) {
     clientUrl.split(",").forEach((url) => {
@@ -27,19 +31,23 @@ const buildAllowedOrigins = () => {
 
 const allowedOrigins = buildAllowedOrigins();
 
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow no-origin requests (curl, Render health checks, mobile)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
 app.set("trust proxy", 1);
 app.use(helmet());
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow requests with no origin (curl, mobile apps, Render health checks)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
-    },
-    credentials: true,
-  }),
-);
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // handle preflight for all routes
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
