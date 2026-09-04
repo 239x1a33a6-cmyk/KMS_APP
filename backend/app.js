@@ -57,20 +57,11 @@ const generalLimiter = rateLimit({
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
-  message: "Too many requests from this IP, please try again later.",
+  message: "Too many requests, please try again later.",
   skip: (req) => req.path === "/api/health",
 });
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 50,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: "Too many login attempts, please try again in 15 minutes.",
-});
-
 app.use(generalLimiter);
-app.use("/api/auth", authLimiter);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
