@@ -1,7 +1,15 @@
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
-  const token = req.cookies?.token;
+  // Support both cookie (same-origin) and Authorization header (cross-origin SPA)
+  let token = req.cookies?.token;
+
+  if (!token) {
+    const authHeader = req.headers["authorization"];
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    }
+  }
 
   if (!token) {
     return res.status(401).json({

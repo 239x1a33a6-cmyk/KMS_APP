@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import authService from "../services/authService";
+import { setToken } from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -15,16 +16,12 @@ const getStoredUser = () => {
 };
 
 const storeUser = (user) => {
-  if (user) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-  } else {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+  if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  else localStorage.removeItem(STORAGE_KEY);
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUserState] = useState(getStoredUser);
-  // If cached user exists, skip the loading spinner entirely
   const [loading, setLoading] = useState(!getStoredUser());
 
   const setUser = (u) => {
@@ -37,13 +34,11 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.getCurrentUser();
       setUser(response.data?.data || null);
     } catch (error) {
-      // Only invalidate the session on an explicit 401 from the server.
-      // Network errors (server cold-start, CORS hiccup) should NOT log the user out.
-      const status = error?.response?.status;
-      if (status === 401) {
+      // Only invalidate on explicit 401 — not network/CORS errors
+      if (error?.response?.status === 401) {
+        setToken(null);
         setUser(null);
       }
-      // For any other error (network, 5xx, CORS) keep the cached user alive
     } finally {
       setLoading(false);
     }
@@ -51,7 +46,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const response = await authService.login(credentials);
-    setUser(response.data?.data || null);
+    const { token, data } = response.data || {};
+    if (token) setToken(token);       // store JWT for Authorization header
+    setUser(data || null);
     return response;
   };
 
@@ -62,6 +59,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await authService.logout();
+    setToken(null);
     setUser(null);
   };
 
@@ -71,15 +69,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const value = useMemo(
-    () => ({
-      user,
-      loading,
-      setUser,
-      login,
-      register,
-      logout,
-      checkAuth,
-    }),
+    () => ({ user, loading, setUser, login, register, logout, checkAuth }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [user, loading],
   );
